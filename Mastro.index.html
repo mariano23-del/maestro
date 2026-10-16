@@ -1,0 +1,1822 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maestro - Estúdio Gospel Contemporâneo</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  :root {
+    --bg: #0A0A0F;
+    --surface: #1A1B2E;
+    --primary: #7C3AED;
+    --primary-light: #A78BFA;
+    --sagrado: #FBBF24;
+    --espirito: #10B981;
+    --texto: #F8FAFC;
+    --texto-sub: #94A3B8;
+    --texto-fraco: #64748B;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(180deg, #0A0A0F 0%, #2E1065 100%);
+    min-height: 100vh;
+    color: var(--texto);
+    padding-bottom: 80px;
+    overflow-x: hidden;
+  }
+  .header {
+    padding: 20px 20px 12px;
+    position: sticky; top: 0;
+    background: rgba(10,10,15,0.95);
+    backdrop-filter: blur(20px);
+    z-index: 100;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    display: flex; align-items: center; gap: 12px;
+  }
+  .header .voltar {
+    background: rgba(255,255,255,0.08); border: none;
+    color: var(--texto); padding: 8px 14px; border-radius: 10px;
+    font-size: 16px; cursor: pointer; display: none;
+  }
+  .header .voltar.ativo { display: block; }
+  .header h1 { font-size: 20px; font-weight: 800; }
+  .container { padding: 16px 20px; max-width: 720px; margin: 0 auto; }
+  .hero { padding: 20px 0 30px; }
+  .hero h1 { font-size: 44px; font-weight: 800; letter-spacing: -2px; line-height: 1; }
+  .hero p { color: var(--texto-sub); font-size: 14px; margin-top: 8px; }
+  .card {
+    background: rgba(255,255,255,0.04);
+    border-radius: 14px; padding: 18px; margin-bottom: 10px;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-left-width: 4px; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .card:hover { background: rgba(255,255,255,0.08); transform: translateX(2px); }
+  .card:active { transform: scale(0.98); }
+  .card h3 { font-size: 16px; font-weight: 700; color: var(--texto); }
+  .card p { font-size: 12px; color: var(--texto-sub); margin-top: 4px; }
+  .card.voz { border-left-color: #F43F5E; }
+  .card.roxa { border-left-color: #6366F1; }
+  .card.arr { border-left-color: #8B5CF6; }
+  .card.lab { border-left-color: #EC4899; }
+  .card.bib { border-left-color: #0EA5E9; }
+  .card.des { border-left-color: #F59E0B; }
+  .card.fer { border-left-color: #F472B6; }
+  .card.mem { border-left-color: #A855F7; }
+  .card.das { border-left-color: #38BDF8; }
+  .card.conf { border-left-color: #64748B; }
+
+  .avat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; margin-top: 12px; }
+  .avat {
+    background: rgba(255,255,255,0.04); border-radius: 12px;
+    padding: 10px; text-align: center; cursor: pointer;
+    border: 2px solid rgba(255,255,255,0.06);
+    transition: all 0.15s;
+  }
+  .avat:active { transform: scale(0.95); }
+  .avat.ativo { border-width: 3px; }
+  .avat.falando { animation: pulse 1s infinite; }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(244,63,94,0.7); }
+    50% { box-shadow: 0 0 0 12px rgba(244,63,94,0); }
+  }
+  .avat .emoji { font-size: 24px; }
+  .avat .nome { font-size: 12px; font-weight: 700; margin-top: 4px; }
+  .avat .naipe { font-size: 9px; font-weight: 700; margin-top: 2px; }
+  .avat .tess { font-size: 9px; color: var(--texto-fraco); margin-top: 3px; }
+
+  .chat-box {
+    background: rgba(0,0,0,0.3); border-radius: 12px;
+    padding: 14px; min-height: 240px; max-height: 400px;
+    overflow-y: auto; margin: 12px 0;
+  }
+  .msg {
+    padding: 10px 14px; border-radius: 12px;
+    margin-bottom: 8px; max-width: 88%;
+    font-size: 13px; line-height: 1.45;
+    word-wrap: break-word;
+  }
+  .msg.eu { background: var(--primary); margin-left: auto; }
+  .msg.avatar { background: rgba(255,255,255,0.06); position: relative; }
+  .msg.sistema { background: rgba(251,191,36,0.15); color: var(--sagrado); font-size: 11px; font-style: italic; text-align: center; margin: 8px auto; max-width: 100%; }
+  .msg .btn-falar {
+    background: rgba(244,63,94,0.15); border: none; color: #F43F5E;
+    padding: 4px 10px; border-radius: 8px; font-size: 11px;
+    font-weight: 700; cursor: pointer; margin-top: 6px;
+    display: inline-block;
+  }
+  .msg .btn-falar:hover { background: rgba(244,63,94,0.3); }
+  .msg.falando { border-left: 3px solid #F43F5E; }
+
+  .input-row { display: flex; gap: 8px; margin-top: 8px; }
+  .input-row input {
+    flex: 1; background: rgba(0,0,0,0.4);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--texto); padding: 12px 14px;
+    border-radius: 10px; font-size: 14px; outline: none;
+  }
+  .input-row input:focus { border-color: var(--primary); }
+  .btn {
+    background: var(--primary); border: none;
+    color: white; padding: 12px 20px;
+    border-radius: 10px; font-weight: 800;
+    cursor: pointer; font-size: 14px;
+    transition: all 0.15s;
+  }
+  .btn:active { transform: scale(0.96); }
+  .btn:hover { background: #6D28D9; }
+  .btn.verde { background: var(--espirito); }
+  .btn.verde:hover { background: #059669; }
+  .btn.vermelho { background: #EF4444; }
+  .btn.vermelho:hover { background: #DC2626; }
+  .btn.rosa { background: #F43F5E; }
+  .btn.rosa:hover { background: #E11D48; }
+  .btn.sec { background: rgba(255,255,255,0.08); }
+  .btn.sec:hover { background: rgba(255,255,255,0.15); }
+  .btn.gravando { animation: recording 1s infinite; }
+  @keyframes recording {
+    0%, 100% { background: #F43F5E; }
+    50% { background: #EF4444; }
+  }
+  .btn-row { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+
+  .piano-wrap {
+    overflow-x: auto; padding: 12px 0;
+    -webkit-overflow-scrolling: touch; margin: 12px 0;
+  }
+  .piano { display: flex; position: relative; height: 140px; padding: 0 6px; min-width: fit-content; }
+  .tecla-branca {
+    width: 34px; height: 140px;
+    background: #F8FAFC; border: 1px solid #334155;
+    border-radius: 0 0 6px 6px;
+    display: flex; align-items: flex-end; justify-content: center;
+    padding-bottom: 8px; cursor: pointer;
+    font-size: 9px; font-weight: 700; color: #0F172A;
+    margin-right: 2px; transition: all 0.05s;
+    user-select: none;
+  }
+  .tecla-branca:active { background: #CBD5E1; transform: translateY(2px); }
+  .tecla-branca.ativa { background: var(--primary); color: white; }
+  .tecla-preta {
+    position: absolute; width: 22px; height: 88px;
+    background: #1E293B; border-radius: 0 0 4px 4px;
+    cursor: pointer; z-index: 10; top: 0;
+    transition: all 0.05s; user-select: none;
+  }
+  .tecla-preta:active { background: #334155; transform: translateY(2px); }
+  .tecla-preta.ativa { background: var(--primary); }
+
+  .metronomo {
+    background: rgba(255,255,255,0.04);
+    padding: 20px; border-radius: 16px; margin-bottom: 16px;
+  }
+  .metronomo .bolinhas { display: flex; gap: 8px; justify-content: center; margin-bottom: 16px; }
+  .bolinha {
+    width: 20px; height: 20px; border-radius: 10px;
+    background: rgba(255,255,255,0.1);
+    transition: all 0.1s;
+  }
+  .bolinha.ativa { background: var(--primary); transform: scale(1.2); }
+  .bolinha.forte { background: var(--sagrado); }
+  .metronomo .bpm-display { font-size: 56px; font-weight: 800; text-align: center; }
+  .metronomo .bpm-label { text-align: center; font-size: 11px; letter-spacing: 2px; color: var(--texto-sub); margin-bottom: 12px; }
+  .bpm-slider { width: 100%; margin: 12px 0; accent-color: var(--primary); }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0; }
+  .chip {
+    background: rgba(255,255,255,0.05);
+    padding: 8px 14px; border-radius: 8px;
+    font-size: 12px; font-weight: 700;
+    cursor: pointer; border: 1px solid transparent;
+    transition: all 0.15s;
+  }
+  .chip:active { transform: scale(0.95); }
+  .chip.ativo { background: var(--primary); color: white; }
+  .chip:hover { border-color: rgba(255,255,255,0.2); }
+
+  .monitor {
+    background: rgba(0,0,0,0.4);
+    border-radius: 14px; padding: 16px; margin: 12px 0;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .monitor .nota-grande {
+    font-size: 64px; font-weight: 800;
+    text-align: center; letter-spacing: -2px;
+    line-height: 1; transition: color 0.15s;
+  }
+  .monitor .cents { text-align: center; font-size: 14px; color: var(--texto-sub); margin-top: 4px; }
+  .monitor .freq { text-align: center; font-size: 11px; color: var(--texto-fraco); margin-top: 2px; }
+  .medidor { height: 26px; background: rgba(255,255,255,0.05); border-radius: 13px; position: relative; margin-top: 16px; }
+  .medidor .centro-linha { position: absolute; left: 50%; width: 2px; height: 100%; background: #475569; }
+  .medidor .marcador {
+    position: absolute; width: 18px; height: 18px; border-radius: 9px;
+    top: 4px; margin-left: -9px; transition: left 0.1s;
+  }
+  .medidor-legend { display: flex; justify-content: space-between; font-size: 10px; color: var(--texto-fraco); margin-top: 4px; }
+
+  .aula-item {
+    background: rgba(255,255,255,0.04);
+    padding: 12px 14px; border-radius: 10px;
+    margin-bottom: 6px; cursor: pointer;
+    transition: background 0.15s;
+  }
+  .aula-item:hover { background: rgba(255,255,255,0.08); }
+  .aula-item .num { font-size: 10px; color: var(--primary-light); font-weight: 700; letter-spacing: 1px; }
+  .aula-item .tit { font-size: 14px; font-weight: 600; margin-top: 2px; }
+
+  .config-box {
+    background: rgba(251,191,36,0.08);
+    border: 1px solid rgba(251,191,36,0.2);
+    padding: 14px; border-radius: 12px;
+    margin-bottom: 16px;
+  }
+  .config-box label { display: block; font-size: 12px; color: var(--sagrado); font-weight: 700; margin-bottom: 8px; }
+  .config-box input {
+    width: 100%; background: rgba(0,0,0,0.4);
+    border: 1px solid rgba(251,191,36,0.3);
+    color: var(--texto); padding: 10px 12px;
+    border-radius: 8px; font-size: 13px;
+    font-family: monospace;
+  }
+
+  .toast {
+    position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+    background: rgba(0,0,0,0.9); color: white;
+    padding: 12px 20px; border-radius: 30px;
+    font-size: 13px; font-weight: 600;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s, bottom 0.3s;
+    z-index: 9999; max-width: 90%; text-align: center;
+  }
+  .toast.show { opacity: 1; bottom: 50px; }
+
+  .sec-title {
+    font-size: 12px; color: var(--primary-light);
+    font-weight: 700; letter-spacing: 1.5px;
+    text-transform: uppercase; margin: 24px 0 12px;
+  }
+  .small { font-size: 11px; color: var(--texto-fraco); }
+  .info-box {
+    background: rgba(255,255,255,0.03);
+    padding: 14px; border-radius: 12px;
+    font-size: 12px; color: var(--texto-sub);
+    line-height: 1.6; margin-bottom: 12px;
+  }
+  .info-box strong { color: var(--sagrado); }
+
+  /* Estilos novos para VOZ */
+  .voz-big-btn {
+    background: linear-gradient(135deg, #F43F5E, #EC4899);
+    color: white; border: none;
+    padding: 24px; border-radius: 16px;
+    font-size: 18px; font-weight: 800;
+    cursor: pointer; width: 100%;
+    box-shadow: 0 8px 24px rgba(244,63,94,0.3);
+    transition: all 0.2s;
+  }
+  .voz-big-btn:active { transform: scale(0.97); }
+  .voz-big-btn.gravando {
+    background: linear-gradient(135deg, #EF4444, #DC2626);
+    animation: pulsar 1.2s infinite;
+  }
+  @keyframes pulsar {
+    0%, 100% { box-shadow: 0 8px 24px rgba(239,68,68,0.4); }
+    50% { box-shadow: 0 8px 40px rgba(239,68,68,0.8); }
+  }
+  .transcricao-box {
+    background: rgba(244,63,94,0.1);
+    border: 1px solid rgba(244,63,94,0.3);
+    padding: 14px; border-radius: 12px;
+    margin-top: 12px;
+    font-size: 14px; color: #FECACA;
+    min-height: 60px;
+  }
+  .transcricao-box.ativa { animation: piscar 1.2s infinite; }
+  @keyframes piscar {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+  .status-voz {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    background: rgba(244,63,94,0.2);
+    color: #FECACA;
+  }
+  .avatar-falando-big {
+    display: flex; align-items: center; gap: 12px;
+    background: rgba(244,63,94,0.1);
+    border: 2px solid #F43F5E;
+    padding: 14px; border-radius: 14px;
+    margin: 12px 0;
+  }
+  .avatar-falando-big .emoji-big { font-size: 42px; }
+  .avatar-falando-big .onda {
+    display: flex; gap: 3px; align-items: center; height: 32px;
+  }
+  .avatar-falando-big .onda span {
+    display: block; width: 4px; background: #F43F5E;
+    border-radius: 2px;
+    animation: onda 0.8s infinite ease-in-out;
+  }
+  .avatar-falando-big .onda span:nth-child(2) { animation-delay: 0.1s; }
+  .avatar-falando-big .onda span:nth-child(3) { animation-delay: 0.2s; }
+  .avatar-falando-big .onda span:nth-child(4) { animation-delay: 0.3s; }
+  .avatar-falando-big .onda span:nth-child(5) { animation-delay: 0.4s; }
+  @keyframes onda {
+    0%, 100% { height: 8px; }
+    50% { height: 28px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <button class="voltar" id="btnVoltar" onclick="voltar()">← Voltar</button>
+  <h1 id="headerTitulo">Maestro</h1>
+</div>
+
+<div class="container" id="app"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ==========================================================
+// 🎼 MAESTRO — HTML + JS puro, IA Groq, VOZ ativa
+// ==========================================================
+
+const state = {
+  tela: 'home',
+  apiKey: localStorage.getItem('maestro_groq_key') || '',
+  avatarSelecionado: null,
+  coroAtivo: JSON.parse(localStorage.getItem('maestro_coro') || '[]'),
+  historico: JSON.parse(localStorage.getItem('maestro_hist') || '{}'),
+  metronomo: { rodando: false, bpm: 90, beat: 0, formula: 4, somAtivo: true },
+  afinador: { ativo: false, freq: 0, nota: '', cents: 0 },
+  desafio: null,
+  memoria: JSON.parse(localStorage.getItem('maestro_mem') || '{"temas":[],"desafios":[],"minutos":0}'),
+  voz: { ativa: true, volume: 1, autoFalar: true },
+  vozInput: { reconhecendo: false, texto: '', rec: null },
+  validacao: { ativo: false, notaAlvo: null, historico: [] },
+};
+
+const AVATARES = [
+  { id: 'sara', nome: 'Sara', genero: 'F', naipe: 'Soprano', tess: 'C4-C6', pers: 'Brilhante, precisa nos agudos. Sempre pergunta se você quer vibrato ou reto.', cor: '#F472B6', emoji: '👩‍🦰', vozPitch: 1.5, vozRate: 1.0 },
+  { id: 'rebeca', nome: 'Rebeca', genero: 'F', naipe: 'Soprano', tess: 'C4-E5', pers: 'Potência gospel, adora belt e riffs. Fala com energia contagiante.', cor: '#EC4899', emoji: '💃', vozPitch: 1.45, vozRate: 1.05 },
+  { id: 'debora', nome: 'Débora', genero: 'F', naipe: 'Meio-Soprano', tess: 'A3-A5', pers: 'Versátil, corpo e calor no médio. Conselheira do grupo.', cor: '#DB2777', emoji: '🌹', vozPitch: 1.3, vozRate: 1.0 },
+  { id: 'raquel', nome: 'Raquel', genero: 'F', naipe: 'Meio-Soprano', tess: 'A3-G5', pers: 'Especialista em baladas, sensível, escolhe cada palavra.', cor: '#C026D3', emoji: '🎵', vozPitch: 1.3, vozRate: 0.95 },
+  { id: 'miria', nome: 'Miriã', genero: 'F', naipe: 'Contralto', tess: 'F3-F5', pers: 'Graves aveludados, firmeza absoluta. Fala pausado e grave.', cor: '#9333EA', emoji: '🌙', vozPitch: 1.05, vozRate: 0.92 },
+  { id: 'ester', nome: 'Ester', genero: 'F', naipe: 'Soprano', tess: 'C4-D6', pers: 'Embellishments e riffs. Fala com melodia na voz.', cor: '#7C3AED', emoji: '✨', vozPitch: 1.5, vozRate: 1.02 },
+  { id: 'lidia', nome: 'Lídia', genero: 'F', naipe: 'Meio-Soprano', tess: 'A3-A5', pers: 'Harmonias densas, adora falar de voicings fechados.', cor: '#A855F7', emoji: '🎼', vozPitch: 1.25, vozRate: 0.97 },
+  { id: 'ana', nome: 'Ana', genero: 'F', naipe: 'Contralto', tess: 'F3-E5', pers: 'Sustentação. Fala pouco, mas cada palavra pesa.', cor: '#8B5CF6', emoji: '🕊️', vozPitch: 1.0, vozRate: 0.9 },
+  { id: 'priscila', nome: 'Priscila', genero: 'F', naipe: 'Soprano', tess: 'C4-F6', pers: 'Agilidade, escalas rápidas. Fala rápido quando empolga.', cor: '#D946EF', emoji: '💎', vozPitch: 1.55, vozRate: 1.08 },
+  { id: 'febe', nome: 'Febe', genero: 'F', naipe: 'Meio-Soprano', tess: 'A3-A5', pers: 'Vibe black gospel, adora melisma. Fala com groove.', cor: '#F472B6', emoji: '🔥', vozPitch: 1.22, vozRate: 1.0 },
+  { id: 'abigail', nome: 'Abigail', genero: 'F', naipe: 'Contralto', tess: 'E3-D5', pers: 'Drive vocal leve, adora blues scale. Fala rouco suave.', cor: '#BE185D', emoji: '🎷', vozPitch: 1.05, vozRate: 0.94 },
+  { id: 'noemi', nome: 'Noemi', genero: 'F', naipe: 'Soprano', tess: 'C4-B5', pers: 'Coral congregacional, voz macia. Fala gentil.', cor: '#F9A8D4', emoji: '🌸', vozPitch: 1.4, vozRate: 0.93 },
+  { id: 'hulda', nome: 'Hulda', genero: 'F', naipe: 'Meio-Soprano', tess: 'G3-A5', pers: 'Backing vocal sólido, sempre pensa no mix.', cor: '#E879F9', vozPitch: 1.2, vozRate: 0.96 },
+  { id: 'davi', nome: 'Davi', genero: 'M', naipe: 'Tenor', tess: 'C3-A4', pers: 'Worship puro, agudos abertos. Fala com fé e calma.', cor: '#3B82F6', emoji: '👨‍🦰', vozPitch: 0.95, vozRate: 0.98 },
+  { id: 'samuel', nome: 'Samuel', genero: 'M', naipe: 'Tenor', tess: 'C3-B4', pers: 'Potência e belt masculino. Sempre disposto a subir tom.', cor: '#2563EB', emoji: '🦁', vozPitch: 0.9, vozRate: 1.02 },
+  { id: 'asafe', nome: 'Asafe', genero: 'M', naipe: 'Barítono', tess: 'A2-F4', pers: 'Meio-termo rico, central. Explica harmonia com clareza.', cor: '#1D4ED8', emoji: '🎩', vozPitch: 0.85, vozRate: 0.97 },
+  { id: 'josue', nome: 'Josué', genero: 'M', naipe: 'Baixo', tess: 'E2-D4', pers: 'Gravíssimo, marcante. Fala devagar e com peso.', cor: '#1E40AF', emoji: '⚓', vozPitch: 0.7, vozRate: 0.9 },
+  { id: 'salomao', nome: 'Salomão', genero: 'M', naipe: 'Tenor', tess: 'C3-A4', pers: 'Riffs e improviso masculino. Adora pentatônica.', cor: '#0EA5E9', emoji: '👑', vozPitch: 0.92, vozRate: 1.03 },
+  { id: 'timateo', nome: 'Timóteo', genero: 'M', naipe: 'Barítono', tess: 'A2-F4', pers: 'Equilíbrio de naipe. Sempre pensa no coletivo.', cor: '#0369A1', emoji: '🕊️', vozPitch: 0.83, vozRate: 0.96 },
+  { id: 'barnabe', nome: 'Barnabé', genero: 'M', naipe: 'Baixo', tess: 'E2-E4', pers: 'Sustentação rítmica. Fala com groove.', cor: '#1E3A8A', vozPitch: 0.75, vozRate: 0.94 },
+  { id: 'silas', nome: 'Silas', genero: 'M', naipe: 'Tenor', tess: 'D3-G4', pers: 'Coros modernos e pop gospel. Fala leve e rápido.', cor: '#60A5FA', emoji: '🎧', vozPitch: 0.95, vozRate: 1.0 },
+  { id: 'lucas', nome: 'Lucas', genero: 'M', naipe: 'Barítono', tess: 'A2-G4', pers: 'Acordes fechados, condução. Explica com desenho.', cor: '#7C3AED', vozPitch: 0.87, vozRate: 0.97 },
+  { id: 'elias', nome: 'Elias', genero: 'M', naipe: 'Tenor', tess: 'C3-B4', pers: 'Clímax de pontes. Fala com intensidade crescente.', cor: '#DC2626', vozPitch: 0.9, vozRate: 1.0 },
+  { id: 'abraao', nome: 'Abraão', genero: 'M', naipe: 'Baixo', tess: 'E2-C4', pers: 'Acordes em bloco. Fala como um patriarca.', cor: '#78350F', vozPitch: 0.72, vozRate: 0.88 },
+  { id: 'jonas', nome: 'Jonas', genero: 'M', naipe: 'Tenor', tess: 'D3-A4', pers: 'Divisão de vozes complexas. Sempre conta as vozes.', cor: '#0891B2', vozPitch: 0.93, vozRate: 0.98 },
+];
+
+const AULAS_PIANO = [
+  { mes: 1, titulo: 'Fundamentos, Postura e Tríades', temas: [
+    { n: 1, t: 'Teclado, Postura, Digitação', acordes: ['C4','E4','G4'] },
+    { n: 2, t: 'Tríades Maiores e Menores', acordes: ['C4','E4','G4','A3','C4','E4'] },
+    { n: 3, t: 'Sistema Nashville (I, IV, V, vi)', acordes: ['C4','F4','G4','A3'] },
+    { n: 4, t: 'Inversões Básicas', acordes: ['E4','G4','C5'] },
+    { n: 5, t: 'Ritmo de Bloco Congregacional', acordes: ['C4','E4','G4'] },
+  ]},
+  { mes: 2, titulo: 'Tétrades, Sétimas e Voice Leading', temas: [
+    { n: 6, t: 'Tétrades (7M, 7, m7, m7M)', acordes: ['C4','E4','G4','B4'] },
+    { n: 7, t: 'Círculo de Quintas Gospel', acordes: ['C4','F4','A#3','D#4'] },
+    { n: 8, t: 'Voice Leading - Evitando Saltos', acordes: ['G3','B3','D4','F4'] },
+    { n: 9, t: 'Cadências II-V-I', acordes: ['D4','F4','A4','C5'] },
+    { n: 10, t: 'Hinos e Corinhos', acordes: ['F4','A4','C5'] },
+  ]},
+  { mes: 3, titulo: 'Extensões, Suspensos e Worship', temas: [
+    { n: 11, t: 'Acordes Suspensos (sus4)', acordes: ['C4','F4','G4'] },
+    { n: 12, t: 'Extensões 9, 11, 13', acordes: ['C4','E4','G4','D5'] },
+    { n: 13, t: 'Aberturas Modernas (Drop 2)', acordes: ['C4','G4','E5'] },
+    { n: 14, t: 'Slash Chords (C/E, F/A)', acordes: ['E4','G4','C5'] },
+    { n: 15, t: 'Dinâmica Worship - Clímax', acordes: ['C4','E4','G4','B4'] },
+  ]},
+  { mes: 4, titulo: 'Passagens e Dominantes Secundárias', temas: [
+    { n: 16, t: 'Diminutos de Passagem (dim7)', acordes: ['C#4','E4','G4','A#4'] },
+    { n: 17, t: 'Dominantes Secundárias (V7/V)', acordes: ['D4','F#4','A4','C5'] },
+    { n: 18, t: 'Line Clichés Cromáticos', acordes: ['C4','B3','A#3','A3'] },
+    { n: 19, t: 'Turnarounds Pentecostais', acordes: ['C4','E4','A4','D5'] },
+    { n: 20, t: 'Baladas Worship Sensíveis', acordes: ['C4','E4','G4'] },
+  ]},
+  { mes: 5, titulo: 'Empréstimo Modal e Black Gospel', temas: [
+    { n: 21, t: 'Empréstimo Modal (bVII, bVI)', acordes: ['A#3','D4','F4'] },
+    { n: 22, t: 'Modulação (Subida de Tom)', acordes: ['C4','E4','G4','C#4'] },
+    { n: 23, t: 'Rítmica Black Gospel', acordes: ['C4','E4','G4','B4'] },
+    { n: 24, t: 'Upper Structures', acordes: ['D4','F#4','A4','C5'] },
+    { n: 25, t: 'Tríades Paralelas de Passagem', acordes: ['C4','D4','E4','F4'] },
+  ]},
+  { mes: 6, titulo: 'O Pianista Gospel Completo', temas: [
+    { n: 26, t: 'Solos: Blues e Pentatônica', acordes: ['C4','D#4','F4','F#4','G4'] },
+    { n: 27, t: 'Pads e Camadas (Layers)', acordes: ['C4','G4','E5'] },
+    { n: 28, t: 'Tocar com Banda', acordes: ['C4','E4','G4'] },
+    { n: 29, t: 'Leitura de Cifras Complexas', acordes: ['C4','E4','G4','B4','D5'] },
+    { n: 30, t: 'Projeto Final Gospel', acordes: ['C4','E4','G4','B4'] },
+  ]},
+];
+
+const TEMAS_ARRANJO = [
+  { n: 1, bloco: '📘 Fundamentos', t: 'A Sílaba Tem Uma Nota' },
+  { n: 2, bloco: '📘 Fundamentos', t: 'Intervalos' },
+  { n: 3, bloco: '📘 Fundamentos', t: 'Escalas e Tonalidades' },
+  { n: 4, bloco: '📘 Fundamentos', t: 'Formação de Acordes' },
+  { n: 5, bloco: '📘 Fundamentos', t: 'Funções Harmônicas + Ouvido' },
+  { n: 6, bloco: '🎤 Vozes Iniciais', t: '2ª Voz' },
+  { n: 7, bloco: '🎤 Vozes Iniciais', t: '3 Vozes' },
+  { n: 8, bloco: '🎤 Vozes Iniciais', t: 'Condução de Vozes' },
+  { n: 9, bloco: '🎤 Vozes Iniciais', t: 'Espaçamento e Duplicação' },
+  { n: 10, bloco: '🎤 Vozes Iniciais', t: 'Notas de Tensão e Resolução' },
+  { n: 11, bloco: '🎼 Harmonia Avançada', t: '4 Vozes (SATB)' },
+  { n: 12, bloco: '🎼 Harmonia Avançada', t: 'Voicings Abertos e Fechados' },
+  { n: 13, bloco: '🎼 Harmonia Avançada', t: 'Inversões e Tétrades' },
+  { n: 14, bloco: '🎼 Harmonia Avançada', t: '7ª, 9ª, 11ª e 13ª' },
+  { n: 15, bloco: '🎼 Harmonia Avançada', t: 'Suspensos e Dominantes Secundárias' },
+  { n: 16, bloco: '🎨 Rearmonização', t: 'Empréstimo Modal' },
+  { n: 17, bloco: '🎨 Rearmonização', t: 'Modulação' },
+  { n: 18, bloco: '🎨 Rearmonização', t: 'Substituições e Rearmonização' },
+  { n: 19, bloco: '🎨 Rearmonização', t: 'Progressões Avançadas' },
+  { n: 20, bloco: '🎨 Rearmonização', t: 'Revisão + Arranjo Completo' },
+  { n: 21, bloco: '👥 Formações Vocais', t: 'Duetos' },
+  { n: 22, bloco: '👥 Formações Vocais', t: 'Trios' },
+  { n: 23, bloco: '👥 Formações Vocais', t: 'Quartetos' },
+  { n: 24, bloco: '👥 Formações Vocais', t: 'Backing Vocals e Coral' },
+  { n: 25, bloco: '👥 Formações Vocais', t: 'SATB + Naipes' },
+  { n: 26, bloco: '🏗️ Estrutura', t: 'Intro, Verso, Pré-refrão' },
+  { n: 27, bloco: '🏗️ Estrutura', t: 'Refrão, Ponte, Interlúdio' },
+  { n: 28, bloco: '🏗️ Estrutura', t: 'Instrumental e Transições' },
+  { n: 29, bloco: '🏗️ Estrutura', t: 'Final e Clímax' },
+  { n: 30, bloco: '🏗️ Estrutura', t: 'Arranjo Completo' },
+  { n: 31, bloco: '📝 Notação', t: 'Partitura e Cifra' },
+  { n: 32, bloco: '📝 Notação', t: 'Tessitura e Registro' },
+  { n: 33, bloco: '📝 Notação', t: 'Transposição para Naipes' },
+  { n: 34, bloco: '📝 Notação', t: 'Melodias e Motivos' },
+  { n: 35, bloco: '📝 Notação', t: 'Letra + Melodia + Estrutura' },
+  { n: 36, bloco: '📝 Notação', t: '2ª e 3ª Vozes Originais' },
+  { n: 37, bloco: '🎧 Transcrição', t: 'Descobrir Tonalidade' },
+  { n: 38, bloco: '🎧 Transcrição', t: 'Descobrir Acordes' },
+  { n: 39, bloco: '🎧 Transcrição', t: 'Reconhecer Progressões' },
+  { n: 40, bloco: '🎧 Transcrição', t: 'Ensinar Cada Naipe' },
+  { n: 41, bloco: '🎧 Transcrição', t: 'Ensaio por Partes' },
+  { n: 42, bloco: '🎧 Transcrição', t: 'Corrigir Afinação/Ritmo' },
+  { n: 43, bloco: '🎧 Transcrição', t: 'Conduzir Ensaio Completo' },
+  { n: 44, bloco: '🎧 Transcrição', t: 'Projeto Final' },
+];
+
+const HINOS = [
+  { t: 'Oceans', a: 'Hillsong United', tom: 'D', bpm: 68, estilo: 'worship' },
+  { t: 'Way Maker', a: 'Sinach', tom: 'Bb', bpm: 74, estilo: 'africano' },
+  { t: 'Goodness of God', a: 'Bethel Music', tom: 'A', bpm: 63, estilo: 'worship' },
+  { t: 'King of Kings', a: 'Hillsong Worship', tom: 'D', bpm: 76, estilo: 'worship' },
+  { t: 'Holy Forever', a: 'Elevation', tom: 'Bb', bpm: 72, estilo: 'worship' },
+  { t: 'Stomp', a: 'Kirk Franklin', tom: 'F', bpm: 112, estilo: 'black gospel' },
+  { t: 'Total Praise', a: 'Richard Smallwood', tom: 'Db', bpm: 68, estilo: 'black gospel' },
+  { t: 'Reckless Love', a: 'Bethel', tom: 'G', bpm: 62, estilo: 'worship' },
+  { t: 'What a Beautiful Name', a: 'Hillsong', tom: 'D', bpm: 68, estilo: 'worship' },
+  { t: 'Ele Vem', a: 'Gabriel Guedes', tom: 'A', bpm: 76, estilo: 'BR contemporâneo' },
+  { t: 'Ousado Amor', a: 'Isaias Saad', tom: 'Bb', bpm: 70, estilo: 'BR contemporâneo' },
+  { t: 'Lugar Secreto', a: 'Gabriela Rocha', tom: 'E', bpm: 68, estilo: 'BR contemporâneo' },
+  { t: 'Yeshua', a: 'MORADA', tom: 'F#m', bpm: 72, estilo: 'BR contemporâneo' },
+  { t: 'Firm Foundation', a: 'Maverick City', tom: 'C', bpm: 68, estilo: 'worship' },
+  { t: 'Lion and the Lamb', a: 'Bethel', tom: 'B', bpm: 76, estilo: 'worship' },
+  { t: 'Jireh', a: 'Maverick City', tom: 'D', bpm: 78, estilo: 'worship' },
+  { t: '10.000 Reasons', a: 'Matt Redman', tom: 'G', bpm: 73, estilo: 'worship' },
+  { t: 'Build My Life', a: 'Housefires', tom: 'G', bpm: 68, estilo: 'worship' },
+  { t: 'Deus é Deus', a: 'Delino Marçal', tom: 'F', bpm: 82, estilo: 'BR contemporâneo' },
+  { t: 'Hino da Vitória', a: 'Cassiane', tom: 'F', bpm: 84, estilo: 'BR contemporâneo' },
+];
+
+const NOTAS_MAP = { C:0,'C#':1,Db:1,D:2,'D#':3,Eb:3,E:4,F:5,'F#':6,Gb:6,G:7,'G#':8,Ab:8,A:9,'A#':10,Bb:10,B:11 };
+const NOTAS_NOME = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+
+function notaParaFreq(nota) {
+  const m = nota.match(/^([A-G][#b]?)(\d)$/);
+  if (!m) return 440;
+  const semitons = NOTAS_MAP[m[1]];
+  const oitava = parseInt(m[2]);
+  const semitonsDeA4 = (oitava - 4) * 12 + (semitons - 9);
+  return 440 * Math.pow(2, semitonsDeA4 / 12);
+}
+
+function freqParaNota(freq) {
+  if (freq <= 0) return { nota: '', cents: 0 };
+  const A4 = 440;
+  const cont = 69 + 12 * Math.log2(freq / A4);
+  const midi = Math.round(cont);
+  const cents = Math.round((cont - midi) * 100);
+  const oitava = Math.floor(midi / 12) - 1;
+  return { nota: NOTAS_NOME[midi % 12] + oitava, cents };
+}
+
+let audioCtx = null;
+function getAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+function tocarNota(freq, duracao = 0.7, volume = 0.15, tipo = 'sine') {
+  const ctx = getAudio();
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = tipo;
+  osc.frequency.value = freq;
+  gain.gain.setValueAtTime(0, ctx.currentTime);
+  gain.gain.linearRampToValueAtTime(volume, ctx.currentTime + 0.02);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duracao);
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start();
+  osc.stop(ctx.currentTime + duracao);
+}
+
+function tocarAcorde(notas, duracao = 1.0) {
+  notas.forEach(n => tocarNota(notaParaFreq(n), duracao, 0.12));
+}
+
+function tocarNotaTimbre(freq, naipe, duracao = 0.7) {
+  const ctx = getAudio();
+  const mapa = {
+    'Soprano': { tipo: 'sine', vol: 0.12 },
+    'Meio-Soprano': { tipo: 'triangle', vol: 0.13 },
+    'Contralto': { tipo: 'triangle', vol: 0.14 },
+    'Tenor': { tipo: 'sawtooth', vol: 0.08 },
+    'Barítono': { tipo: 'sawtooth', vol: 0.07 },
+    'Baixo': { tipo: 'sawtooth', vol: 0.06 },
+  };
+  const cfg = mapa[naipe] || mapa['Tenor'];
+  const osc = ctx.createOscillator();
+  const osc2 = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = cfg.tipo;
+  osc2.type = 'sine';
+  osc.frequency.value = freq;
+  osc2.frequency.value = freq * 2;
+  gain.gain.setValueAtTime(0, ctx.currentTime);
+  gain.gain.linearRampToValueAtTime(cfg.vol, ctx.currentTime + 0.03);
+  gain.gain.setValueAtTime(cfg.vol, ctx.currentTime + duracao * 0.7);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duracao);
+  osc.connect(gain);
+  osc2.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start(); osc2.start();
+  osc.stop(ctx.currentTime + duracao);
+  osc2.stop(ctx.currentTime + duracao);
+}
+
+// ==========================================================
+// 🎤 SÍNTESE DE VOZ (TTS)
+// ==========================================================
+
+let vozesDisponiveis = [];
+
+function carregarVozes() {
+  if (!('speechSynthesis' in window)) return;
+  vozesDisponiveis = window.speechSynthesis.getVoices();
+  if (vozesDisponiveis.length === 0) {
+    window.speechSynthesis.onvoiceschanged = () => {
+      vozesDisponiveis = window.speechSynthesis.getVoices();
+    };
+  }
+}
+
+function escolherVoz(genero) {
+  // Prioriza vozes em PT-BR
+  const ptBr = vozesDisponiveis.filter(v => v.lang === 'pt-BR' || v.lang.startsWith('pt'));
+  if (ptBr.length === 0) return vozesDisponiveis[0] || null;
+  // Busca nome feminino/masculino em português
+  const femininas = ['Luciana','Fernanda','Maria','Helena','Google português do Brasil'];
+  const masculinas = ['Felipe','Daniel','João','Google português do Brasil'];
+  if (genero === 'F') {
+    const v = ptBr.find(v => femininas.some(f => v.name.includes(f)));
+    return v || ptBr[0];
+  } else {
+    const v = ptBr.find(v => masculinas.some(m => v.name.includes(m)));
+    return v || ptBr[0];
+  }
+}
+
+function falar(texto, avatar) {
+  if (!state.voz.ativa) return;
+  if (!('speechSynthesis' in window)) {
+    toast('Voz não suportada neste navegador');
+    return;
+  }
+  // Para qualquer fala em andamento
+  window.speechSynthesis.cancel();
+
+  const utter = new SpeechSynthesisUtterance(texto);
+  const voz = escolherVoz(avatar.genero);
+  if (voz) utter.voice = voz;
+  utter.lang = 'pt-BR';
+  utter.pitch = avatar.vozPitch || 1.0;
+  utter.rate = avatar.vozRate || 1.0;
+  utter.volume = state.voz.volume;
+
+  // Marca visualmente o avatar como falando
+  if (avatar && avatar.id) {
+    marcarAvatarFalando(avatar.id, true);
+    utter.onend = () => marcarAvatarFalando(avatar.id, false);
+    utter.onerror = () => marcarAvatarFalando(avatar.id, false);
+  }
+
+  window.speechSynthesis.speak(utter);
+}
+
+function pararFala() {
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  document.querySelectorAll('.avat.falando').forEach(el => el.classList.remove('falando'));
+}
+
+function marcarAvatarFalando(id, ativo) {
+  document.querySelectorAll(`.avat[data-id="${id}"]`).forEach(el => {
+    el.classList.toggle('falando', ativo);
+  });
+}
+
+// ==========================================================
+// 🎙️ RECONHECIMENTO DE VOZ (STT)
+// ==========================================================
+
+let recognition = null;
+function iniciarReconhecimento(onTexto, onFim) {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    toast('Reconhecimento de voz não suportado. Use Chrome ou Edge.');
+    return null;
+  }
+  const rec = new SR();
+  rec.lang = 'pt-BR';
+  rec.continuous = false;
+  rec.interimResults = true;
+  let textoFinal = '';
+  rec.onresult = (e) => {
+    let interim = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const t = e.results[i][0].transcript;
+      if (e.results[i].isFinal) textoFinal += t;
+      else interim += t;
+    }
+    onTexto(textoFinal, interim);
+  };
+  rec.onerror = (e) => {
+    toast('Erro de voz: ' + e.error);
+  };
+  rec.onend = () => {
+    if (onFim) onFim(textoFinal);
+  };
+  rec.start();
+  return rec;
+}
+
+// ==========================================================
+// 🎯 IA - GROQ
+// ==========================================================
+
+const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
+const GROQ_MODEL = 'openai/gpt-oss-20b';
+
+async function perguntarIA(mensagem, contexto = '') {
+  if (!state.apiKey) {
+    return `[Modo offline] Configure sua chave Groq em ⚙️ Configurações.`;
+  }
+  const sistema = `Você é o MAESTRO — assistente musical especializado em GOSPEL CONTEMPORÂNEO.
+Referências: Hillsong, Bethel, Elevation, Maverick City, Kirk Franklin, Sinach, Gabriel Guedes, Isaias Saad, MORADA, Fernandinho.
+Regras:
+- NUNCA avance se o aluno não entendeu 100%
+- Se errar, explique de outra forma com exemplo gospel real
+- Use linguagem de maestro: "Vamos ao compasso X", "Fique atento ao cruzamento de vozes"
+- Ao ensinar acorde, cite notas (ex: Cmaj7 = C-E-G-B)
+- Seja didático e técnico, mas acessível.
+- Se sua resposta pedir um exemplo sonoro (acorde, escala, intervalo), mencione CLARAMENTE:
+  "Para ouvir, clique em tocar" ou "Escute o acorde abaixo"`;
+
+  try {
+    const resp = await fetch(GROQ_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${state.apiKey}`
+      },
+      body: JSON.stringify({
+        model: GROQ_MODEL,
+        messages: [
+          { role: 'system', content: sistema },
+          { role: 'user', content: contexto ? `${contexto}\n\nAluno: ${mensagem}` : mensagem }
+        ],
+        temperature: 0.7,
+        max_tokens: 800
+      })
+    });
+    if (!resp.ok) {
+      const erro = await resp.text();
+      throw new Error(`HTTP ${resp.status}: ${erro.slice(0, 200)}`);
+    }
+    const data = await resp.json();
+    return data.choices?.[0]?.message?.content || '(sem resposta)';
+  } catch (e) {
+    return `[Erro: ${e.message}]\n\nVerifique sua chave Groq em ⚙️ Configurações.`;
+  }
+}
+
+// ==========================================================
+// UTILS
+// ==========================================================
+
+let toastTimer = null;
+function toast(msg, duracao = 2500) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), duracao);
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+}
+
+function salvar() {
+  localStorage.setItem('maestro_coro', JSON.stringify(state.coroAtivo));
+  localStorage.setItem('maestro_hist', JSON.stringify(state.historico));
+  localStorage.setItem('maestro_mem', JSON.stringify(state.memoria));
+}
+
+function ir(tela) {
+  state.tela = tela;
+  render();
+  window.scrollTo(0, 0);
+}
+
+function voltar() {
+  pararFala();
+  if (state.tela.startsWith('chat-')) return ir('lab');
+  if (state.tela.startsWith('aula-piano-')) return ir('piano');
+  if (state.tela.startsWith('aula-arr-')) return ir('arr');
+  ir('home');
+}
+
+// ==========================================================
+// TELAS
+// ==========================================================
+
+function telaHome() {
+  const modulos = [
+    { rota: 'lab', titulo: '🎙️ Laboratório por Voz', sub: 'Fale com os avatares, eles respondem falando', cls: 'voz' },
+    { rota: 'aula-falada', titulo: '🔊 Aula Falada', sub: 'Aula em voz quando você pedir', cls: 'voz' },
+    { rota: 'ensaio-cor', titulo: '🎼 Ensaio de Coro por Voz', sub: 'Fale "Sara canta C4" e ela canta', cls: 'voz' },
+    { rota: 'validar-voz', titulo: '🎤 Validação por Voz', sub: 'Cante e o app valida', cls: 'voz' },
+    { rota: 'piano', titulo: '🎹 Aulas de Piano', sub: '30 temas • Gospel contemporâneo', cls: 'roxa' },
+    { rota: 'arr', titulo: '🎼 Arranjo e Composição', sub: '44 temas • Harmonia gospel', cls: 'arr' },
+    { rota: 'lab', titulo: '👥 Laboratório de Vozes', sub: '25 avatares • Ensaio vivo', cls: 'lab' },
+    { rota: 'bib', titulo: '📖 Biblioteca de Hinos', sub: `${HINOS.length} hinos gospel contemporâneo`, cls: 'bib' },
+    { rota: 'desafio', titulo: '🎯 Modo Desafio', sub: 'Ouça e reproduza', cls: 'des' },
+    { rota: 'ferramentas', titulo: '🛠️ Ferramentas', sub: 'Metrônomo + Afinador', cls: 'fer' },
+    { rota: 'memoria', titulo: '🧠 Memória do Maestro', sub: 'O que a IA lembra', cls: 'mem' },
+    { rota: 'config', titulo: '⚙️ Configurações', sub: 'Chave Groq, voz, preferências', cls: 'conf' },
+  ];
+  return `
+    <div class="hero">
+      <h1>Maestro</h1>
+      <p>Estúdio gospel por voz</p>
+    </div>
+    ${modulos.map(m => `
+      <div class="card ${m.cls}" onclick="ir('${m.rota}')">
+        <h3>${m.titulo}</h3>
+        <p>${m.sub}</p>
+      </div>
+    `).join('')}
+  `;
+}
+
+// ============ LABORATÓRIO POR VOZ ============
+function telaLabVoz() {
+  const mulheres = AVATARES.filter(a => a.genero === 'F');
+  const homens = AVATARES.filter(a => a.genero === 'M');
+  return `
+    <div class="sec-title">🎙️ Laboratório por Voz</div>
+    <div class="info-box">
+      Clique em um avatar, fale com ele e ele responde <strong>falando em voz alta</strong>.<br>
+      Use <strong>Chrome ou Edge</strong> para reconhecimento de voz.
+    </div>
+
+    <button class="voz-big-btn" id="btnVoz" onclick="falarComSelecionado()">
+      🎤 Falar com o avatar selecionado
+    </button>
+
+    <div id="transcricaoBox" class="transcricao-box">
+      Selecione um avatar abaixo primeiro.
+    </div>
+
+    ${state.coroAtivo.length > 0 ? `
+      <div class="info-box" style="background:rgba(124,58,237,0.15);border-left:4px solid var(--primary);">
+        🎙️ <strong>Coro ativo (${state.coroAtivo.length} vozes):</strong>
+        <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;">
+          ${state.coroAtivo.map(id => {
+            const av = AVATARES.find(a => a.id === id);
+            return `<span style="background:${av.cor};padding:4px 10px;border-radius:14px;font-size:11px;font-weight:700;">${av.emoji} ${av.nome}</span>`;
+          }).join('')}
+        </div>
+        <div class="btn-row" style="margin-top:10px;">
+          <button class="btn verde" onclick="falarCoro()">🎼 Coro fala cumprimento</button>
+          <button class="btn vermelho" onclick="limparCoro()">🗑️ Limpar</button>
+        </div>
+      </div>
+    ` : ''}
+
+    <div class="sec-title">👩 Mulheres</div>
+    <div class="avat-grid">
+      ${mulheres.map(a => renderAvatarCard(a)).join('')}
+    </div>
+    <div class="sec-title">👨 Homens</div>
+    <div class="avat-grid">
+      ${homens.map(a => renderAvatarCard(a)).join('')}
+    </div>
+  `;
+}
+
+function renderAvatarCard(a) {
+  const ativo = state.coroAtivo.includes(a.id);
+  const selecionado = state.avatarSelecionado === a.id;
+  return `
+    <div class="avat ${ativo ? 'ativo' : ''}" data-id="${a.id}"
+         style="border-color:${selecionado ? a.cor : (ativo ? a.cor : a.cor + '40')};${selecionado ? 'box-shadow:0 0 0 3px ' + a.cor + '40;' : ''}"
+         onclick="selecionarAvatar('${a.id}')">
+      <div class="emoji">${a.emoji}</div>
+      <div class="nome">${a.nome}</div>
+      <div class="naipe" style="color:${a.cor}">${a.naipe}</div>
+      <button onclick="event.stopPropagation();toggleCoro('${a.id}')" style="margin-top:6px;background:${ativo ? a.cor : 'rgba(255,255,255,0.1)'};border:none;color:white;padding:4px 10px;border-radius:8px;font-size:10px;font-weight:700;cursor:pointer;">
+        ${ativo ? '✓ No coro' : '+ Coro'}
+      </button>
+    </div>
+  `;
+}
+
+function selecionarAvatar(id) {
+  state.avatarSelecionado = id;
+  const av = AVATARES.find(a => a.id === id);
+  document.getElementById('transcricaoBox').innerHTML = `<strong>${av.emoji} ${av.nome} selecionado.</strong> Clique em <strong>🎤 Falar</strong> e comece a falar.`;
+  document.querySelectorAll('.avat').forEach(el => {
+    el.style.boxShadow = '';
+  });
+  document.querySelectorAll(`.avat[data-id="${id}"]`).forEach(el => {
+    el.style.boxShadow = `0 0 0 3px ${av.cor}40`;
+  });
+}
+
+function toggleCoro(id) {
+  const i = state.coroAtivo.indexOf(id);
+  if (i === -1) {
+    if (state.coroAtivo.length >= 6) { toast('Máximo 6 vozes'); return; }
+    state.coroAtivo.push(id);
+  } else {
+    state.coroAtivo.splice(i, 1);
+  }
+  salvar();
+  render();
+}
+
+function limparCoro() {
+  state.coroAtivo = [];
+  salvar();
+  render();
+}
+
+function falarCoro() {
+  if (state.coroAtivo.length === 0) { toast('Adicione avatares ao coro'); return; }
+  const frase = 'Somos o coro do Maestro, prontos para ensaiar!';
+  let delay = 0;
+  state.coroAtivo.forEach((id, i) => {
+    const av = AVATARES.find(a => a.id === id);
+    setTimeout(() => falar(frase, av), delay);
+    delay += 2200;
+  });
+  toast('🎼 Coro falando…');
+}
+
+async function falarComSelecionado() {
+  if (!state.avatarSelecionado) { toast('Selecione um avatar primeiro'); return; }
+  const av = AVATARES.find(a => a.id === state.avatarSelecionado);
+  const box = document.getElementById('transcricaoBox');
+  const btn = document.getElementById('btnVoz');
+
+  box.className = 'transcricao-box ativa';
+  box.innerHTML = `<strong>🎤 Ouvindo...</strong> fale agora`;
+  btn.classList.add('gravando');
+  btn.textContent = '🔴 Gravando — fale agora';
+
+  const rec = iniciarReconhecimento(
+    (final, interim) => {
+      box.innerHTML = `<strong>🎤 Ouvindo:</strong> ${escapeHtml(final + ' ' + interim)}`;
+    },
+    async (textoFinal) => {
+      btn.classList.remove('gravando');
+      btn.textContent = '🎤 Falar com o avatar selecionado';
+      box.className = 'transcricao-box';
+      const texto = textoFinal.trim();
+      if (!texto) {
+        box.innerHTML = `<em>Nada foi reconhecido. Tente de novo.</em>`;
+        return;
+      }
+      box.innerHTML = `<strong>Você disse:</strong> ${escapeHtml(texto)}`;
+
+      // Adiciona ao histórico de chat
+      state.historico[av.id] = state.historico[av.id] || [];
+      state.historico[av.id].push({ autor: 'eu', texto });
+      salvar();
+
+      // Pede à IA
+      toast('🤖 ' + av.nome + ' pensando…');
+      const resp = await perguntarIA(texto,
+        `Você é ${av.nome}, ${av.naipe} (${av.tess}). Personalidade: ${av.pers}
+Responda COMO ${av.nome} numa sala de ensaio real. Seja BREVE (máx 3 frases).
+Se o aluno pedir para cantar notas, responda confirmando e depois as notas serão tocadas.`
+      );
+
+      state.historico[av.id].push({ autor: 'avatar', texto: resp });
+      salvar();
+
+      // FALA a resposta em voz alta
+      falar(resp, av);
+
+      // Mostra na tela
+      box.innerHTML = `
+        <div style="margin-bottom:10px;"><strong>Você:</strong> ${escapeHtml(texto)}</div>
+        <div class="avatar-falando-big">
+          <div class="emoji-big">${av.emoji}</div>
+          <div style="flex:1;">
+            <div style="font-size:12px;color:#FECACA;font-weight:800;margin-bottom:4px;">🔊 ${av.nome} está falando</div>
+            <div style="font-size:13px;line-height:1.5;">${escapeHtml(resp)}</div>
+          </div>
+          <div class="onda"><span></span><span></span><span></span><span></span><span></span></div>
+        </div>
+      `;
+
+      // Detecta se a resposta pede exemplo sonoro → toca acordes automaticamente
+      const matchAcorde = texto.match(/\b([A-G][#b]?)(maj7|m7|7|dim|aug|sus4|sus2)?\b/gi);
+      if (matchAcorde) {
+        setTimeout(() => {
+          const acordeNotas = ['C4','E4','G4']; // exemplo genérico
+          tocarAcorde(acordeNotas, 1.5);
+        }, 1500);
+      }
+    }
+  );
+}
+
+// ============ AULA FALADA ============
+function telaAulaFalada() {
+  return `
+    <div class="sec-title">🔊 Aula Falada</div>
+    <div class="info-box">
+      Escolha um avatar como professor e um tema. Ele <strong>escreve</strong> a aula e <strong>fala</strong> os pontos principais quando você pedir.<br>
+      <strong>💡 Dica:</strong> Fala automática quando a resposta pede exemplo sonoro.
+    </div>
+
+    <div class="sec-title">Escolha o professor</div>
+    <div class="avat-grid">
+      ${AVATARES.slice(0, 8).map(a => `
+        <div class="avat ${state.avatarSelecionado === a.id ? 'ativo' : ''}"
+             style="border-color:${state.avatarSelecionado === a.id ? a.cor : a.cor + '40'}"
+             onclick="state.avatarSelecionado='${a.id}';render();">
+          <div class="emoji">${a.emoji}</div>
+          <div class="nome">${a.nome}</div>
+          <div class="naipe" style="color:${a.cor}">${a.naipe}</div>
+        </div>
+      `).join('')}
+    </div>
+
+    ${state.avatarSelecionado ? `
+      <div class="sec-title">Escolha o tema</div>
+      <div class="chips">
+        ${TEMAS_ARRANJO.slice(0, 20).map(t => `
+          <div class="chip" onclick="iniciarAulaFalada(${t.n}, '${t.t.replace(/'/g, "\\'")}')">${t.n}. ${t.t}</div>
+        `).join('')}
+      </div>
+    ` : ''}
+
+    <div id="aulaFaladaBox" style="margin-top:20px;"></div>
+  `;
+}
+
+async function iniciarAulaFalada(num, titulo) {
+  const av = AVATARES.find(a => a.id === state.avatarSelecionado);
+  const box = document.getElementById('aulaFaladaBox');
+  box.innerHTML = `
+    <div class="info-box">
+      <strong>${av.emoji} ${av.nome} vai dar aula sobre: ${titulo}</strong><br>
+      Aguarde, ele está preparando…
+    </div>
+  `;
+
+  const resp = await perguntarIA(
+    `Dê uma aula completa sobre "${titulo}" em arranjo gospel.
+Estruture em: conceito, exemplo prático com acordes reais, dica de aplicação gospel.
+Máximo 250 palavras.`,
+    `[Aula Falada — ${av.nome}]`
+  );
+
+  box.innerHTML = `
+    <div class="info-box">
+      <strong>${av.emoji} ${av.nome} — Aula sobre ${titulo}</strong>
+    </div>
+    <div style="background:rgba(255,255,255,0.04);padding:16px;border-radius:12px;font-size:14px;line-height:1.6;white-space:pre-wrap;">
+      ${escapeHtml(resp)}
+    </div>
+    <div class="btn-row">
+      <button class="btn rosa" onclick="falarAulaCompleta()">🔊 Ouvir aula completa</button>
+      <button class="btn sec" onclick="pararFala()">⏹ Parar</button>
+    </div>
+    <div id="aulaFaladaTexto" style="display:none;">${escapeHtml(resp)}</div>
+  `;
+
+  // Auto-falar pontos principais se contiverem termos sonoros
+  const temExemplo = /acorde|escala|intervalo|nota|acorde de|escute|ouça/i.test(resp);
+  if (temExemplo && state.voz.autoFalar) {
+    setTimeout(() => {
+      const resumo = resp.split('\n').filter(l => /acorde|escala|nota|escute|ouça/i.test(l)).slice(0, 2).join('. ');
+      if (resumo) falar('Atenção: ' + resumo, av);
+    }, 800);
+  }
+}
+
+function falarAulaCompleta() {
+  const el = document.getElementById('aulaFaladaTexto');
+  if (!el) return;
+  const av = AVATARES.find(a => a.id === state.avatarSelecionado);
+  falar(el.textContent, av);
+}
+
+// ============ ENSAIO DE CORO POR VOZ ============
+function telaEnsaioCor() {
+  return `
+    <div class="sec-title">🎼 Ensaio de Coro por Voz</div>
+    <div class="info-box">
+      Fale comandos como:<br>
+      • "Sara canta C4 E4 G4"<br>
+      • "Davi canta C4"<br>
+      • "Todos cantam acorde de Dó maior"<br>
+      • "Miriã canta F3"
+    </div>
+
+    <button class="voz-big-btn" id="btnEnsaio" onclick="ouvirComandoEnsaio()">
+      🎤 Falar comando para o coro
+    </button>
+
+    <div id="ensaioBox" class="transcricao-box" style="margin-top:12px;">
+      Aguardando seu comando...
+    </div>
+
+    <div class="chips" style="margin-top:16px;">
+      <div class="chip" onclick="executarComandoRapido('Sara canta C4 E4 G4')">Sara canta C-E-G</div>
+      <div class="chip" onclick="executarComandoRapido('Davi canta C3')">Davi canta C3</div>
+      <div class="chip" onclick="executarComandoRapido('Miriã canta F3 A3 C4')">Miriã canta Fm</div>
+      <div class="chip" onclick="executarComandoRapido('Josué canta C2')">Josué canta C2</div>
+    </div>
+  `;
+}
+
+function ouvirComandoEnsaio() {
+  const btn = document.getElementById('btnEnsaio');
+  const box = document.getElementById('ensaioBox');
+  btn.classList.add('gravando');
+  btn.textContent = '🔴 Gravando — diga o comando';
+  box.className = 'transcricao-box ativa';
+  box.innerHTML = '<strong>🎤 Ouvindo...</strong>';
+
+  iniciarReconhecimento(
+    (final, interim) => {
+      box.innerHTML = `<strong>🎤 Ouvindo:</strong> ${escapeHtml(final + ' ' + interim)}`;
+    },
+    (texto) => {
+      btn.classList.remove('gravando');
+      btn.textContent = '🎤 Falar comando para o coro';
+      box.className = 'transcricao-box';
+      if (texto.trim()) {
+        box.innerHTML = `<strong>Você disse:</strong> ${escapeHtml(texto)}`;
+        executarComandoEnsaio(texto);
+      } else {
+        box.innerHTML = '<em>Nada reconhecido. Tente de novo.</em>';
+      }
+    }
+  );
+}
+
+function executarComandoRapido(texto) {
+  const box = document.getElementById('ensaioBox');
+  box.innerHTML = `<strong>Comando:</strong> ${escapeHtml(texto)}`;
+  executarComandoEnsaio(texto);
+}
+
+function executarComandoEnsaio(texto) {
+  const avataresEncontrados = AVATARES.filter(a =>
+    texto.toLowerCase().includes(a.nome.toLowerCase())
+  );
+  // Notas no formato C4, E4, G4, etc
+  const notas = (texto.match(/\b[A-G][#b]?\d\b/g) || []);
+  // "todos" ou "coro"
+  const todos = /todos|coro inteiro|time/i.test(texto);
+
+  if (todos || avataresEncontrados.length === 0) {
+    // Aplica a todos do coro ativo
+    const lista = state.coroAtivo.length > 0
+      ? state.coroAtivo.map(id => AVATARES.find(a => a.id === id))
+      : avataresEncontrados;
+
+    if (lista.length === 0) {
+      toast('Nenhum avatar identificado. Fale "Sara canta C4"');
+      return;
+    }
+
+    const acordeFinal = notas.length > 0 ? notas : ['C4', 'E4', 'G4', 'B4'];
+    lista.forEach((av, idx) => {
+      const nota = acordeFinal[idx % acordeFinal.length];
+      setTimeout(() => {
+        falar(`Vou cantar ${nota}`, av);
+        setTimeout(() => tocarNotaTimbre(notaParaFreq(nota), av.naipe, 1.2), 800);
+      }, idx * 400);
+    });
+    toast('🎼 Coro executando…');
+    return;
+  }
+
+  // Um ou mais avatares específicos
+  if (notas.length === 0) {
+    toast('Não identifiquei notas. Fale "Sara canta C4 E4 G4"');
+    return;
+  }
+
+  avataresEncontrados.forEach((av, i) => {
+    setTimeout(() => {
+      const frase = `Sim maestro, vou cantar ${notas.join(' ')}`;
+      falar(frase, av);
+      setTimeout(() => {
+        notas.forEach((n, j) => {
+          setTimeout(() => tocarNotaTimbre(notaParaFreq(n), av.naipe, 0.9), j * 500);
+        });
+      }, 1800);
+    }, i * 500);
+  });
+  toast(`🎼 ${avataresEncontrados.map(a => a.nome).join(', ')} vai cantar`);
+}
+
+// ============ VALIDAÇÃO POR VOZ ============
+function telaValidarVoz() {
+  return `
+    <div class="sec-title">🎤 Validação por Voz</div>
+    <div class="info-box">
+      Cante e o app mostra a nota em tempo real.<br>
+      <strong>Defina uma nota-alvo</strong> para o app validar se você acertou.
+    </div>
+
+    <div class="chips">
+      ${['C4','D4','E4','F4','G4','A4','B4','C5'].map(n =>
+        `<div class="chip ${state.validacao.notaAlvo === n ? 'ativo' : ''}" onclick="state.validacao.notaAlvo='${n}';render();">${n}</div>`
+      ).join('')}
+      <div class="chip" onclick="state.validacao.notaAlvo=null;render();">Livre</div>
+    </div>
+
+    ${state.validacao.notaAlvo ? `
+      <div class="info-box" style="background:rgba(244,63,94,0.15);border-left:4px solid #F43F5E;">
+        🎯 Nota-alvo: <strong>${state.validacao.notaAlvo}</strong>
+      </div>
+    ` : ''}
+
+    <button class="voz-big-btn" id="btnValidar" onclick="toggleValidacaoVoz()">
+      ${state.validacao.ativo ? '⏹ Parar' : '🎤 Começar a ouvir minha voz'}
+    </button>
+
+    <div class="monitor" style="margin-top:16px;">
+      <div class="nota-grande" id="vozNota">—</div>
+      <div class="cents" id="vozCents">Aguardando voz...</div>
+      <div class="freq" id="vozFreq"></div>
+      <div class="medidor">
+        <div class="centro-linha"></div>
+        <div class="marcador" id="vozMarcador" style="left:50%;background:#10B981;"></div>
+      </div>
+      <div class="medidor-legend"><span>-50¢</span><span>0</span><span>+50¢</span></div>
+      <div id="vozValidacao" style="text-align:center;margin-top:14px;font-size:14px;font-weight:800;"></div>
+    </div>
+  `;
+}
+
+let vozValidStream = null;
+let vozValidAnalyser = null;
+let vozValidRaf = null;
+
+async function toggleValidacaoVoz() {
+  if (state.validacao.ativo) {
+    state.validacao.ativo = false;
+    if (vozValidStream) vozValidStream.getTracks().forEach(t => t.stop());
+    if (vozValidRaf) cancelAnimationFrame(vozValidRaf);
+    render();
+    return;
+  }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    vozValidStream = stream;
+    const ctx = getAudio();
+    const src = ctx.createMediaStreamSource(stream);
+    const analyser = ctx.createAnalyser();
+    analyser.fftSize = 2048;
+    src.connect(analyser);
+    vozValidAnalyser = analyser;
+    state.validacao.ativo = true;
+    render();
+    loopValidacaoVoz();
+  } catch (e) {
+    toast('Microfone bloqueado: ' + e.message);
+  }
+}
+
+function loopValidacaoVoz() {
+  if (!state.validacao.ativo) return;
+  const buffer = new Float32Array(vozValidAnalyser.fftSize);
+  vozValidAnalyser.getFloatTimeDomainData(buffer);
+  const freq = detectarPitchYIN(buffer, getAudio().sampleRate);
+  if (freq > 0 && freq > 60 && freq < 1500) {
+    const { nota, cents } = freqParaNota(freq);
+    const elNota = document.getElementById('vozNota');
+    const elCents = document.getElementById('vozCents');
+    const elFreq = document.getElementById('vozFreq');
+    const elMarc = document.getElementById('vozMarcador');
+    const elValid = document.getElementById('vozValidacao');
+    if (elNota) {
+      elNota.textContent = nota;
+      const cor = Math.abs(cents) < 8 ? '#10B981' : Math.abs(cents) < 25 ? '#FBBF24' : '#EF4444';
+      elNota.style.color = cor;
+      elCents.textContent = (cents > 0 ? '+' : '') + cents + '¢ ' + (Math.abs(cents) < 8 ? '✓' : cents > 0 ? '↓' : '↑');
+      elFreq.textContent = freq.toFixed(1) + ' Hz';
+      elMarc.style.left = (50 + Math.max(-50, Math.min(50, cents))) + '%';
+      elMarc.style.background = cor;
+
+      // Validação com nota-alvo
+      if (state.validacao.notaAlvo) {
+        const acertou = nota === state.validacao.notaAlvo;
+        elValid.innerHTML = acertou
+          ? `<span style="color:#10B981;">✅ Acertou! ${state.validacao.notaAlvo}</span>`
+          : `<span style="color:#FBBF24;">⏺ Você está em ${nota}. Alvo: ${state.validacao.notaAlvo}</span>`;
+      }
+    }
+  }
+  vozValidRaf = requestAnimationFrame(loopValidacaoVoz);
+}
+
+function detectarPitchYIN(buffer, sr) {
+  const SIZE = buffer.length;
+  const MAX = Math.floor(SIZE / 2);
+  const THRESH = 0.15;
+  const dmf = new Float32Array(MAX);
+  for (let tau = 1; tau < MAX; tau++) {
+    let s = 0;
+    for (let i = 0; i < MAX; i++) {
+      const d = buffer[i] - buffer[i + tau];
+      s += d * d;
+    }
+    dmf[tau] = s;
+  }
+  const cmndf = new Float32Array(MAX);
+  cmndf[0] = 1;
+  let soma = 0;
+  for (let tau = 1; tau < MAX; tau++) {
+    soma += dmf[tau];
+    cmndf[tau] = soma === 0 ? 1 : (dmf[tau] * tau) / soma;
+  }
+  let tauEst = -1;
+  for (let tau = 2; tau < MAX; tau++) {
+    if (cmndf[tau] < THRESH) {
+      while (tau + 1 < MAX && cmndf[tau + 1] < cmndf[tau]) tau++;
+      tauEst = tau;
+      break;
+    }
+  }
+  if (tauEst === -1) return -1;
+  const x1 = cmndf[tauEst - 1], x2 = cmndf[tauEst], x3 = cmndf[tauEst + 1];
+  const a = (x1 + x3 - 2 * x2) / 2;
+  const b = (x3 - x1) / 2;
+  const tauRef = a === 0 ? tauEst : tauEst - b / (2 * a);
+  return sr / tauRef;
+}
+
+// ============ CHAT TRADICIONAL (com fala opcional) ============
+function telaChat(id) {
+  const av = AVATARES.find(a => a.id === id);
+  if (!av) return `<p>Avatar não encontrado</p>`;
+  const hist = state.historico[id] || [];
+  return `
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+      <div style="font-size:36px;">${av.emoji}</div>
+      <div style="flex:1;">
+        <div style="font-size:18px;font-weight:800;">${av.nome}</div>
+        <div style="font-size:12px;font-weight:700;color:${av.cor};">${av.naipe} • ${av.tess}</div>
+      </div>
+      <button class="btn rosa" onclick="falarComSelecionadoChat('${id}')">🎤</button>
+    </div>
+    <div class="info-box" style="font-style:italic;">${av.pers}</div>
+    <div class="chat-box" id="chatBox">
+      ${hist.map((m, i) => `
+        <div class="msg ${m.autor === 'eu' ? 'eu' : 'avatar'}" data-msg="${i}">
+          ${escapeHtml(m.texto).replace(/\n/g, '<br>')}
+          ${m.autor === 'avatar' ? `<br><button class="btn-falar" onclick="falarTextoHist('${id}', ${i})">🔊 Ouvir</button>` : ''}
+        </div>
+      `).join('')}
+    </div>
+    <div class="input-row">
+      <input type="text" id="chatInput" placeholder="Fale com ${av.nome}..." onkeydown="if(event.key==='Enter')enviarChat('${id}')">
+      <button class="btn" onclick="enviarChat('${id}')">▶</button>
+      <button class="btn rosa" onclick="falarComSelecionadoChat('${id}')">🎤</button>
+    </div>
+    <div class="btn-row">
+      <button class="btn sec" onclick="pedirCantar('${id}', 'C4 E4 G4')">🎵 Cantar C-E-G</button>
+      <button class="btn sec" onclick="pedirCantar('${id}', 'C4 E4 G4 B4')">🎵 Cantar Cmaj7</button>
+      <button class="btn sec" onclick="limparChat('${id}')">🗑️ Limpar</button>
+    </div>
+  `;
+}
+
+function falarComSelecionadoChat(id) {
+  state.avatarSelecionado = id;
+  ir('lab-voz');
+  setTimeout(() => falarComSelecionado(), 300);
+}
+
+function falarTextoHist(id, idx) {
+  const av = AVATARES.find(a => a.id === id);
+  const msg = state.historico[id][idx];
+  if (msg && av) falar(msg.texto, av);
+}
+
+async function enviarChat(id) {
+  const input = document.getElementById('chatInput');
+  const texto = input.value.trim();
+  if (!texto) return;
+  const av = AVATARES.find(a => a.id === id);
+  state.historico[id] = state.historico[id] || [];
+  state.historico[id].push({ autor: 'eu', texto });
+  salvar();
+  const chat = document.getElementById('chatBox');
+  chat.innerHTML += `<div class="msg eu">${escapeHtml(texto)}</div>`;
+  chat.innerHTML += `<div class="msg avatar">🤖 ${av.nome} pensando…</div>`;
+  chat.scrollTop = chat.scrollHeight;
+  input.value = '';
+
+  const resp = await perguntarIA(texto,
+    `Você é ${av.nome}, ${av.naipe} (${av.tess}). Personalidade: ${av.pers}
+Responda COMO ${av.nome}. Breve. Se for instrução musical, confirme com sua perspectiva de naipe.`
+  );
+
+  state.historico[id].push({ autor: 'avatar', texto: resp });
+  salvar();
+  chat.lastChild.remove();
+  const msgIdx = state.historico[id].length - 1;
+  chat.innerHTML += `<div class="msg avatar" data-msg="${msgIdx}">
+    ${escapeHtml(resp).replace(/\n/g, '<br>')}
+    <br><button class="btn-falar" onclick="falarTextoHist('${id}', ${msgIdx})">🔊 Ouvir</button>
+  </div>`;
+  chat.scrollTop = chat.scrollHeight;
+
+  if (state.voz.autoFalar) falar(resp, av);
+}
+
+function pedirCantar(id, notasStr) {
+  const av = AVATARES.find(a => a.id === id);
+  const notas = notasStr.split(/\s+/);
+  falar(`Vou cantar ${notas.join(' ')}`, av);
+  setTimeout(() => {
+    notas.forEach((n, i) => {
+      setTimeout(() => tocarNotaTimbre(notaParaFreq(n), av.naipe, 0.9), i * 350);
+    });
+  }, 1600);
+}
+
+function limparChat(id) {
+  state.historico[id] = [];
+  salvar();
+  render();
+}
+
+// ============ TELAS ANTIGAS (mantidas) ============
+
+function telaPiano() {
+  return `
+    <div class="sec-title">Curso de Piano Gospel</div>
+    <div class="info-box">6 meses • 30 temas • Do zero ao palco</div>
+    ${AULAS_PIANO.map(mes => `
+      <div class="sec-title">Mês ${mes.mes}: ${mes.titulo}</div>
+      ${mes.temas.map(t => `
+        <div class="aula-item" onclick="ir('aula-piano-${t.n}')">
+          <div class="num">TEMA ${t.n}</div>
+          <div class="tit">${t.t}</div>
+        </div>
+      `).join('')}
+    `).join('')}
+  `;
+}
+
+function telaAulaPiano(num) {
+  let aula = null;
+  AULAS_PIANO.forEach(m => m.temas.forEach(t => { if (t.n === num) aula = { ...t, mes: m.mes, mesTit: m.titulo }; }));
+  if (!aula) return `<p>Aula não encontrada</p>`;
+  return `
+    <div class="sec-title">Mês ${aula.mes} — ${aula.mesTit}</div>
+    <h2 style="font-size:20px;font-weight:800;">Tema ${aula.n}: ${aula.t}</h2>
+    <div class="info-box">
+      <strong>Acordes de referência:</strong> ${aula.acordes.join(' ')}
+    </div>
+    <div class="btn-row">
+      <button class="btn verde" onclick='tocarAcorde(${JSON.stringify(aula.acordes)}, 1.2)'>🔊 Tocar acorde</button>
+      <button class="btn sec" onclick="perguntarAulaPiano(${num}, '${aula.t.replace(/'/g, "\\'")}')">💬 Perguntar</button>
+    </div>
+    <div class="sec-title">Teclado Virtual</div>
+    <div class="piano-wrap"><div class="piano" id="pianoWrapper"></div></div>
+    <div class="chat-box" id="chatAulaPiano" style="margin-top:12px;">
+      <div class="msg sistema">Clique em "Perguntar" para conversar sobre a aula</div>
+    </div>
+  `;
+}
+
+async function perguntarAulaPiano(num, titulo) {
+  const chat = document.getElementById('chatAulaPiano');
+  const pergunta = prompt('Sua pergunta sobre ' + titulo + ':');
+  if (!pergunta) return;
+  chat.innerHTML += `<div class="msg eu">${escapeHtml(pergunta)}</div>`;
+  chat.innerHTML += `<div class="msg avatar">🤖 Consultando…</div>`;
+  chat.scrollTop = chat.scrollHeight;
+  const resp = await perguntarIA(pergunta, `[Aula de Piano — Tema ${num}: ${titulo}]`);
+  chat.lastChild.remove();
+  chat.innerHTML += `<div class="msg avatar">${escapeHtml(resp).replace(/\n/g, '<br>')}</div>`;
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function telaArranjo() {
+  const blocos = {};
+  TEMAS_ARRANJO.forEach(t => { blocos[t.bloco] = blocos[t.bloco] || []; blocos[t.bloco].push(t); });
+  return `
+    <div class="sec-title">Arranjo e Composição</div>
+    <div class="info-box">44 temas • 8 blocos</div>
+    ${Object.entries(blocos).map(([bloco, temas]) => `
+      <div class="sec-title">${bloco}</div>
+      ${temas.map(t => `
+        <div class="aula-item" onclick="ir('aula-arr-${t.n}')">
+          <div class="num">TEMA ${t.n}</div>
+          <div class="tit">${t.t}</div>
+        </div>
+      `).join('')}
+    `).join('')}
+  `;
+}
+
+function telaAulaArr(num) {
+  const tema = TEMAS_ARRANJO.find(t => t.n === num);
+  if (!tema) return `<p>Tema não encontrado</p>`;
+  return `
+    <div class="sec-title">${tema.bloco}</div>
+    <h2 style="font-size:20px;font-weight:800;">Tema ${tema.n}: ${tema.t}</h2>
+    <div class="btn-row">
+      <button class="btn" onclick="perguntarAulaArr(${num}, '${tema.t.replace(/'/g, "\\'")}')">💬 Perguntar ao Maestro</button>
+    </div>
+    <div class="chat-box" id="chatAulaArr">
+      <div class="msg sistema">Peça explicação, exemplos gospel, exercícios…</div>
+    </div>
+  `;
+}
+
+async function perguntarAulaArr(num, titulo) {
+  const chat = document.getElementById('chatAulaArr');
+  const pergunta = prompt('Sua pergunta sobre ' + titulo + ':');
+  if (!pergunta) return;
+  chat.innerHTML += `<div class="msg eu">${escapeHtml(pergunta)}</div>`;
+  chat.innerHTML += `<div class="msg avatar">🤖 Pensando…</div>`;
+  chat.scrollTop = chat.scrollHeight;
+  const resp = await perguntarIA(pergunta, `[Arranjo — Tema ${num}: ${titulo}]`);
+  chat.lastChild.remove();
+  chat.innerHTML += `<div class="msg avatar">${escapeHtml(resp).replace(/\n/g, '<br>')}</div>`;
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function telaLab() {
+  const mulheres = AVATARES.filter(a => a.genero === 'F');
+  const homens = AVATARES.filter(a => a.genero === 'M');
+  return `
+    <div class="sec-title">Laboratório de Vozes (chat)</div>
+    <div class="info-box">
+      Chat de texto com IA. Para VOZ, use 🎙️ Laboratório por Voz na home.
+    </div>
+    <div class="sec-title">👩 Mulheres</div>
+    <div class="avat-grid">
+      ${mulheres.map(a => `
+        <div class="avat" style="border-color:${a.cor}40" onclick="abrirChat('${a.id}')">
+          <div class="emoji">${a.emoji}</div>
+          <div class="nome">${a.nome}</div>
+          <div class="naipe" style="color:${a.cor}">${a.naipe}</div>
+        </div>
+      `).join('')}
+    </div>
+    <div class="sec-title">👨 Homens</div>
+    <div class="avat-grid">
+      ${homens.map(a => `
+        <div class="avat" style="border-color:${a.cor}40" onclick="abrirChat('${a.id}')">
+          <div class="emoji">${a.emoji}</div>
+          <div class="nome">${a.nome}</div>
+          <div class="naipe" style="color:${a.cor}">${a.naipe}</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function abrirChat(id) {
+  state.avatarSelecionado = id;
+  ir('chat-' + id);
+}
+
+function telaBiblioteca() {
+  return `
+    <div class="sec-title">Biblioteca de Hinos</div>
+    ${HINOS.map((h, i) => `
+      <div class="card bib" onclick="verHino(${i})">
+        <div style="display:flex;justify-content:space-between;align-items:start;">
+          <div>
+            <h3>${h.t}</h3>
+            <p>${h.a}</p>
+            <p style="font-size:10px;">♩ ${h.bpm} BPM • ${h.estilo}</p>
+          </div>
+          <div style="background:#0EA5E9;padding:4px 10px;border-radius:8px;font-size:12px;font-weight:800;">${h.tom}</div>
+        </div>
+      </div>
+    `).join('')}
+  `;
+}
+
+function verHino(i) {
+  const h = HINOS[i];
+  perguntarIA(`Arranjo a 4 vozes (SATB) para "${h.t}" de ${h.a} (tom ${h.tom}, ${h.bpm} BPM, ${h.estilo}).`,
+    `[Biblioteca]`).then(resp => alert(`${h.t}\n\n${resp}`));
+}
+
+function telaFerramentas() {
+  return `
+    <div class="sec-title">🛠️ Ferramentas</div>
+    <div class="metronomo">
+      <div class="bolinhas">${[0,1,2,3].map(i => `<div class="bolinha" id="b${i}"></div>`).join('')}</div>
+      <div class="bpm-display" id="bpmDisplay">${state.metronomo.bpm}</div>
+      <div class="bpm-label">BPM</div>
+      <input type="range" min="30" max="240" value="${state.metronomo.bpm}" class="bpm-slider" oninput="mudarBpm(this.value)">
+      <div class="chips">
+        ${[66, 78, 92, 108, 132].map(b => `<div class="chip" onclick="mudarBpm(${b});document.querySelector('.bpm-slider').value=${b}">${b}</div>`).join('')}
+      </div>
+      <div class="chips">
+        ${[2, 3, 4, 6].map(f => `<div class="chip ${state.metronomo.formula === f ? 'ativo' : ''}" onclick="mudarFormula(${f})">${f}/4</div>`).join('')}
+      </div>
+      <button class="btn ${state.metronomo.rodando ? 'vermelho' : 'verde'}" style="width:100%;margin-top:12px;" onclick="toggleMetronomo()">
+        ${state.metronomo.rodando ? '⏹ Parar' : '▶ Iniciar'}
+      </button>
+    </div>
+    <div class="info-box">
+      🎤 Afinador: use 🎤 Validação por Voz na home para ver sua nota em tempo real.
+    </div>
+  `;
+}
+
+let metronomoTimer = null;
+function toggleMetronomo() {
+  const m = state.metronomo;
+  if (m.rodando) { m.rodando = false; clearTimeout(metronomoTimer); }
+  else { m.rodando = true; m.beat = 0; tickMetronomo(); }
+  render();
+}
+
+function tickMetronomo() {
+  const m = state.metronomo;
+  if (!m.rodando) return;
+  document.querySelectorAll('.bolinha').forEach(b => b.classList.remove('ativa', 'forte'));
+  const ativa = document.getElementById('b' + m.beat);
+  if (ativa) { ativa.classList.add('ativa'); if (m.beat === 0) ativa.classList.add('forte'); }
+  if (m.somAtivo) tocarNota(m.beat === 0 ? 1200 : 800, 0.05, 0.2, 'square');
+  m.beat = (m.beat + 1) % m.formula;
+  metronomoTimer = setTimeout(tickMetronomo, 60000 / m.bpm);
+}
+
+function mudarBpm(v) { state.metronomo.bpm = parseInt(v); document.getElementById('bpmDisplay').textContent = v; }
+function mudarFormula(f) { state.metronomo.formula = f; state.metronomo.beat = 0; render(); }
+
+function telaDesafio() {
+  return `
+    <div class="sec-title">🎯 Modo Desafio</div>
+    <button class="btn verde" style="width:100%;padding:20px;" onclick="iniciarDesafio()">▶ Novo Desafio</button>
+    <div id="desafioBox" style="margin-top:20px;"></div>
+  `;
+}
+
+function iniciarDesafio() {
+  state.desafio = { acordes: [
+    { nome: 'Cmaj7', notas: ['C4','E4','G4','B4'] },
+    { nome: 'Am7', notas: ['A3','C4','E4','G4'] },
+    { nome: 'Dm7', notas: ['D4','F4','A4','C5'] },
+    { nome: 'G7', notas: ['G3','B3','D4','F4'] },
+  ]};
+  render();
+}
+
+async function tocarDesafio() {
+  for (const a of state.desafio.acordes) {
+    await new Promise(r => setTimeout(r, 200));
+    tocarAcorde(a.notas, 1.2);
+    await new Promise(r => setTimeout(r, 1400));
+  }
+}
+
+function respostaDesafio() {
+  const d = state.desafio;
+  if (!d) return;
+  const acertos = d.acordes.filter(a => confirm(`Você tocou ${a.nome}?`)).length;
+  const pct = Math.round((acertos / d.acordes.length) * 100);
+  state.memoria.desafios.push({ pct, data: new Date().toISOString() });
+  salvar();
+  alert(`Resultado: ${pct}%`);
+  state.desafio = null;
+  render();
+}
+
+function telaMemoria() {
+  const m = state.memoria;
+  return `
+    <div class="sec-title">🧠 Memória do Maestro</div>
+    <div class="card" style="cursor:default;">
+      <p>Temas: ${m.temas.length}</p>
+      <p>Desafios: ${m.desafios.length}</p>
+      <p>Minutos: ${m.minutos}</p>
+    </div>
+  `;
+}
+
+function telaConfig() {
+  return `
+    <div class="sec-title">⚙️ Configurações</div>
+
+    <div class="config-box">
+      <label>🔑 Chave API do Groq</label>
+      <input type="text" id="apiInput" placeholder="gsk_..." value="${state.apiKey}">
+      <button class="btn" style="margin-top:10px;width:100%;" onclick="salvarApi()">💾 Salvar</button>
+      <div class="small" style="margin-top:8px;">
+        Grátis em <a href="https://console.groq.com" target="_blank" style="color:var(--sagrado);">console.groq.com</a>
+      </div>
+    </div>
+
+    <div class="config-box" style="background:rgba(244,63,94,0.08);border-color:rgba(244,63,94,0.3);">
+      <label style="color:#FECACA;">🔊 Voz dos avatares</label>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;">
+        <span style="font-size:13px;">Falar automaticamente</span>
+        <input type="checkbox" ${state.voz.autoFalar ? 'checked' : ''} onchange="state.voz.autoFalar=this.checked;salvar();">
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;">
+        <span style="font-size:13px;">Volume</span>
+        <input type="range" min="0" max="1" step="0.1" value="${state.voz.volume}" onchange="state.voz.volume=parseFloat(this.value);" style="width:50%;">
+      </div>
+      <div class="small" style="margin-top:12px;">
+        Voz atual do sistema: <strong>${vozesDisponiveis.length > 0 ? vozesDisponiveis.length + ' vozes disponíveis' : 'nenhuma detectada'}</strong>
+      </div>
+      <button class="btn rosa" style="margin-top:10px;width:100%;" onclick="testarVoz()">🔊 Testar voz</button>
+    </div>
+
+    <div class="card" style="cursor:default;">
+      <h3>📊 App</h3>
+      <p>Maestro v1.0 — Groq + Voz</p>
+      <p>25 avatares, 30 temas piano, 44 arranjo</p>
+    </div>
+
+    <div class="card" style="cursor:default;">
+      <h3>💾 Dados</h3>
+      <button class="btn vermelho" style="margin-top:10px;width:100%;" onclick="limparTudo()">🗑️ Apagar tudo</button>
+    </div>
+  `;
+}
+
+function salvarApi() {
+  const v = document.getElementById('apiInput').value.trim();
+  state.apiKey = v;
+  localStorage.setItem('maestro_groq_key', v);
+  toast(v ? '✅ Chave Groq salva' : '⚠️ Chave removida');
+}
+
+function testarVoz() {
+  const av = AVATARES[0];
+  falar(`Olá! Eu sou ${av.nome}, ${av.naipe}. Esta é minha voz.`, av);
+}
+
+function limparTudo() {
+  if (!confirm('Apagar todos os dados?')) return;
+  localStorage.clear();
+  location.reload();
+}
+
+function renderPiano(container) {
+  const notas = [];
+  for (let oit = 3; oit <= 5; oit++) {
+    ['C','D','E','F','G','A','B'].forEach(n => notas.push(n + oit));
+  }
+  const pretas = { C:'C#', D:'D#', F:'F#', G:'G#', A:'A#' };
+  let html = '';
+  let posBranca = 0;
+  notas.forEach(n => {
+    html += `<div class="tecla-branca" onclick="clicarTecla('${n}', event)">${n}</div>`;
+    if (pretas[n[0]]) {
+      const preta = pretas[n[0]] + n[1];
+      html += `<div class="tecla-preta" style="left:${posBranca * 36 + 22}px;" onclick="clicarTecla('${preta}', event)"></div>`;
+    }
+    posBranca++;
+  });
+  container.innerHTML = html;
+}
+
+function clicarTecla(nota, ev) {
+  ev.stopPropagation();
+  tocarNota(notaParaFreq(nota), 0.6, 0.15, 'triangle');
+  ev.target.classList.add('ativa');
+  setTimeout(() => ev.target.classList.remove('ativa'), 200);
+}
+
+// ==========================================================
+// RENDER PRINCIPAL
+// ==========================================================
+
+function render() {
+  const app = document.getElementById('app');
+  const header = document.getElementById('headerTitulo');
+  const btnVoltar = document.getElementById('btnVoltar');
+
+  if (state.tela === 'home') { app.innerHTML = telaHome(); header.textContent = 'Maestro'; btnVoltar.classList.remove('ativo'); }
+  else if (state.tela === 'lab-voz') { app.innerHTML = telaLabVoz(); header.textContent = '🎙️ Laboratório por Voz'; btnVoltar.classList.add('ativo'); }
+  else if (state.tela === 'aula-falada') { app.innerHTML = telaAulaFalada(); header.textContent = '🔊 Aula Falada'; btnVoltar.classList.add('ativo'); }
+  else if (state.tela === 'ensaio-cor') { app.innerHTML = telaEnsaioCor(); header.textContent = '🎼 Ensaio de Coro'; btnVoltar.classList.add('ativo'); }
+  else if (state.tela === 'validar-voz') { app.innerHTML = telaValidarVoz(); header.textContent = '🎤 Validação'; btnVoltar.classList.add('ativo'); }
+  else if (state.tela === 'piano') { app.innerHTML = telaPiano(); header.textContent = '🎹 Piano'; btnVoltar.classList.add('ativo'); }
+  else if (state.tela.startsWith('aula-piano-')) {
+    const n = parseInt(state.tela.replace('aula-piano-', ''));
+    app.innerHTML = telaAulaPiano(n);
+    header.textContent = 'Aula';
+    btnVoltar.classList.add('ativo');
+    setTimeout(() => { const el = document.getElementById('pianoWrapper'); if (el) renderPiano(el); }, 50);
+  }
+  else if (state.tela === 'arr') { app.innerHTML = telaArranjo(); header.textContent = '🎼 Arranjo'; btnVoltar.classList.add('ativo'); }
+  else if (state.tela.startsWith('aula-arr-')) {
+    const n = parseInt(state.tela.replace('aula-arr-', ''));
+    app.innerHTML = telaAulaArr(n);
+    header.textContent = 'Aula';
+    btnVoltar.classList.add('ativo');
+  }
+  else if (state.tela === 'lab') { app.innerHTML = telaLab(); header.textContent = '👥 Laboratório'; btnVoltar.classList.add('ativo'); }
+  else if (state.tela.startsWith('chat-')) {
+    const id = state.tela.replace('chat-', '');
+    app.innerHTML = telaChat(id);
+    header.textContent = 'Chat';
+    btnVoltar.classList.add('ativo');
+    setTimeout(() => { const el = document.getElementById('chatBox'); if (el) el.scrollTop = el.scrollHeight; }, 50);
+  }
+  else if (state.tela === 'bib') { app.innerHTML = telaBiblioteca(); header.textContent = '📖 Biblioteca'; btnVoltar.classList.add('ativo'); }
+  else if (state.tela === 'ferramentas') { app.innerHTML = telaFerramentas(); header.textContent = '🛠️'; btnVoltar.classList.add('ativo'); }
+  else if (state.tela === 'desafio') {
+    app.innerHTML = telaDesafio();
+    header.textContent = '🎯';
+    btnVoltar.classList.add('ativo');
+    if (state.desafio) {
+      const box = document.getElementById('desafioBox');
+      if (box) box.innerHTML = `
+        <button class="btn verde" style="width:100%;margin-bottom:8px;" onclick="tocarDesafio()">🔊 Tocar</button>
+        <button class="btn" style="width:100%;" onclick="respostaDesafio()">✓ Verificar</button>
+      `;
+    }
+  }
+  else if (state.tela === 'memoria') { app.innerHTML = telaMemoria(); header.textContent = '🧠'; btnVoltar.classList.add('ativo'); }
+  else if (state.tela === 'config') { app.innerHTML = telaConfig(); header.textContent = '⚙️'; btnVoltar.classList.add('ativo'); }
+  else { app.innerHTML = telaHome(); header.textContent = 'Maestro'; btnVoltar.classList.remove('ativo'); }
+}
+
+// Boot
+carregarVozes();
+render();
+setTimeout(carregarVozes, 500);
+setTimeout(carregarVozes, 1500);
+
+console.log('🎼 Maestro com voz carregado. Avatares falam, cantam e ouvem.');
+</script>
+</body>
+</html>
